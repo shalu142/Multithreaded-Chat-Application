@@ -53,11 +53,17 @@ Real-Time Messaging: Clients can send and receive messages instantly via TCP soc
 📁 Project Structure
 
 task3/
+
 ├── client.java
+
 ├── server.java
+
 ├── chatlog.txt         # Auto-created by server
+
 ├── README.md
+
 ├── .gitignore
+
 
 🧪 How to Run
 
@@ -80,6 +86,16 @@ You can open multiple terminals or command prompts and run the client program fr
 @list → Displays list of all currently connected users
 
 bye → Disconnects from the chat and informs other users
+
+:) → Displays 😊
+
+:( → Displays 😞
+
+<3 → Displays ❤️
+
+:D → Displays 😄
+
+;) → Displays 😉
 
 This application is a solid foundation for building more complex systems. With some enhancements, it could support user authentication, graphical interfaces, end-to-end encryption, or even voice and video calls. For now, it serves as a clean and educational implementation of a terminal-based chat system using core Java technologies.
 
