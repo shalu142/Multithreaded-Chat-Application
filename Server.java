@@ -20,6 +20,7 @@ public class Server {
                 new Thread(handler).start();
             }
         } catch (IOException e) {
+            System.out.println("Server error: " + e.getMessage());
         }
     }
 
@@ -64,7 +65,17 @@ public class Server {
             writer.write(message);
             writer.newLine();
         } catch (IOException e) {
+            System.out.println("Error logging message: " + e.getMessage());
         }
+    }
+
+    private static String convertEmojis(String message) {
+        return message
+                .replace(":)", "😊")
+                .replace(":(", "😞")
+                .replace("<3", "❤️")
+                .replace(":D", "😄")
+                .replace(";)", "😉");
     }
 
     static class ClientHandler implements Runnable {
@@ -79,6 +90,7 @@ public class Server {
                 input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 output = new PrintWriter(socket.getOutputStream(), true);
             } catch (IOException e) {
+                System.out.println("Error setting up client IO: " + e.getMessage());
             }
         }
 
@@ -102,26 +114,29 @@ public class Server {
                         if (spaceIndex != -1) {
                             String target = message.substring(1, spaceIndex);
                             String privateMsg = message.substring(spaceIndex + 1);
-                            sendPrivate(target, name + ": " + privateMsg);
+                            sendPrivate(target, name + ": " + convertEmojis(privateMsg));
                         }
                     } else if (message.startsWith("/typing")) {
                         broadcast(name + " is typing...", this);
                     } else if (message.startsWith("/file")) {
                         output.println("File sharing not fully implemented.");
+                    } else if (message.equalsIgnoreCase("bye")) {
+                        break;
                     } else {
                         String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
-                        message = message.replace(":)", "😊").replace(":(", "☹️");
-                        broadcast("[" + time + "] " + name + ": " + message, this);
+                        String formatted = convertEmojis(message);
+                        broadcast("[" + time + "] " + name + ": " + formatted, this);
                     }
                 }
             } catch (IOException e) {
-                System.out.println(name + " disconnected.");
+                System.out.println(name + " disconnected unexpectedly.");
             } finally {
                 removeClient(this);
                 broadcast(name + " left the chat.", this);
                 try {
                     socket.close();
                 } catch (IOException e) {
+                    System.out.println("Error closing socket: " + e.getMessage());
                 }
             }
         }
