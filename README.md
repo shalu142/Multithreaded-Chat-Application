@@ -32,17 +32,15 @@ Real-Time Messaging: Clients can send and receive messages instantly via TCP soc
 
 👤 Username Support: Each user is prompted to enter a username which is used to identify messages.
 
+👥 Group Messaging: Clients can send messages visible to all other users.
+
 📩 Private Messaging: Users can send private messages using @username syntax, which ensures only the target recipient sees the message.
 
 👥 Online User List: Users can type @list to see the list of all connected users in real time.
 
 🕒 Timestamps: All messages are timestamped with the current time to provide context and history.
 
-💬 Typing Indicator: When a user is typing, other users are notified, giving a more interactive experience.
-
-😄 Emoji Support: Text-based emoticons like :) and :( are automatically converted to emojis to enhance expressiveness.
-
-📁 File Transfer (Placeholder): A placeholder is added for file sharing, laying the groundwork for future enhancements.
+📁 File Sharing Support:  Clients can request files from the server using /get filename. Files are stored in the server’s uploads/ directory and downloaded to the client’s downloads/ folder.
 
 📝 Chat Logging: Every chat session is logged to a chatlog.txt file on the server. This can be useful for moderation or archival.
 
@@ -54,15 +52,21 @@ Real-Time Messaging: Clients can send and receive messages instantly via TCP soc
 
 task3/
 
-├── client.java
+├── server/
 
-├── server.java
+│   └── Server.java
 
-├── chatlog.txt         # Auto-created by server
+├── client/
 
-├── README.md
+│   └── Client.java
 
-├── .gitignore
+├── uploads/              // Server's file storage
+
+├── downloads/            // Client's download location
+
+├── chatlog.txt           // Log of public messages
+
+└── README.md
 
 
 🧪 How to Run
@@ -79,24 +83,41 @@ java client
 
 You can open multiple terminals or command prompts and run the client program from each to simulate a real-time group chat environment.
 
-🤖 Example Commands
+💬 Commands
+@list – Displays the list of currently connected users.
 
-@username Hello! → Sends private message to specific user
+@username message – Sends a private message to the specified user.
 
-@list → Displays list of all currently connected users
+/get filename – Downloads a file from the server’s uploads/ folder.
 
-bye → Disconnects from the chat and informs other users
+bye – Disconnects from the server and exits the client.
 
-:) → Displays 😊
 
-:( → Displays 😞
+🔒 Error Handling
+If the server is not available, the client will retry connection up to 5 times.
 
-<3 → Displays ❤️
+If a file requested does not exist, the server notifies the client.
 
-:D → Displays 😄
+Disconnection is handled gracefully with status messages.
 
-;) → Displays 😉
+Enter your username:
+Alice
+> [10:15] Bob: Hello everyone!
+> @list
+Users online: Bob, Alice
+> @Bob Can you share the notes?
+> /get report.pdf
+📁 File downloaded: /downloads/report.pdf
+
 
 This application is a solid foundation for building more complex systems. With some enhancements, it could support user authentication, graphical interfaces, end-to-end encryption, or even voice and video calls. For now, it serves as a clean and educational implementation of a terminal-based chat system using core Java technologies.
 
 Output:
+
+👨‍💻 Author
+Shalu Baloda
+Java Intern at CODTECH IT SOLUTIONS & Vault of Codes
+This project is part of a practical internship assignment showcasing networking and multithreaded application development.
+
+📄 License
+This project is open-source and free to use for educational purposes.
