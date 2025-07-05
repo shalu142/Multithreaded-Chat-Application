@@ -11,6 +11,7 @@ public class Server {
     private static final String LOG_FILE = "chatlog.txt";
 
     public static void main(String[] args) {
+        new File("uploads").mkdirs();
         System.out.println("Server started on port " + PORT);
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             while (true) {
@@ -69,15 +70,6 @@ public class Server {
         }
     }
 
-    private static String convertEmojis(String message) {
-        return message
-                .replace(":)", "😊")
-                .replace(":(", "😞")
-                .replace("<3", "❤️")
-                .replace(":D", "😄")
-                .replace(";)", "😉");
-    }
-
     static class ClientHandler implements Runnable {
         private Socket socket;
         private BufferedReader input;
@@ -114,18 +106,49 @@ public class Server {
                         if (spaceIndex != -1) {
                             String target = message.substring(1, spaceIndex);
                             String privateMsg = message.substring(spaceIndex + 1);
-                            sendPrivate(target, name + ": " + convertEmojis(privateMsg));
+                            sendPrivate(target, name + ": " + privateMsg);
                         }
-                    } else if (message.startsWith("/typing")) {
-                        broadcast(name + " is typing...", this);
-                    } else if (message.startsWith("/file")) {
-                        output.println("File sharing not fully implemented.");
+                    } else if (message.startsWith("/file ")) {
+                        String[] parts = message.split(" ", 2);
+                        File file = new File("uploads", parts[1]);
+                        if (file.exists()) {
+                            output.println("/filetransfer " + file.getName() + " " + file.length());
+                            try (FileInputStream fis = new FileInputStream(file);
+                                 OutputStream os = socket.getOutputStream()) {
+                                byte[] buffer = new byte[4096];
+                                int bytesRead;
+                                while ((bytesRead = fis.read(buffer)) != -1) {
+                                    os.write(buffer, 0, bytesRead);
+                                }
+                                os.flush();
+                                System.out.println("File sent to " + name + ": " + file.getName());
+                            }
+                        } else {
+                            output.println("File not found on server.");
+                        }
+                    } else if (message.startsWith("/get ")) {
+                        String filename = message.substring(5).trim();
+                        File file = new File("uploads", filename);
+                        if (file.exists()) {
+                            output.println("/filetransfer " + file.getName() + " " + file.length());
+                            try (FileInputStream fis = new FileInputStream(file);
+                                 OutputStream os = socket.getOutputStream()) {
+                                byte[] buffer = new byte[4096];
+                                int bytesRead;
+                                while ((bytesRead = fis.read(buffer)) != -1) {
+                                    os.write(buffer, 0, bytesRead);
+                                }
+                                os.flush();
+                                System.out.println("Sent file to " + name + ": " + filename);
+                            }
+                        } else {
+                            output.println("File not found.");
+                        }
                     } else if (message.equalsIgnoreCase("bye")) {
                         break;
                     } else {
                         String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
-                        String formatted = convertEmojis(message);
-                        broadcast("[" + time + "] " + name + ": " + formatted, this);
+                        broadcast("[" + time + "] " + name + ": " + message, this);
                     }
                 }
             } catch (IOException e) {
