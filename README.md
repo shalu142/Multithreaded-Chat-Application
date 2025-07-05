@@ -84,6 +84,7 @@ java client
 You can open multiple terminals or command prompts and run the client program from each to simulate a real-time group chat environment.
 
 💬 Commands
+
 @list – Displays the list of currently connected users.
 
 @username message – Sends a private message to the specified user.
@@ -101,12 +102,19 @@ If a file requested does not exist, the server notifies the client.
 Disconnection is handled gracefully with status messages.
 
 Enter your username:
+
 Alice
-> [10:15] Bob: Hello everyone!
-> @list
+
+[10:15] Bob: Hello everyone!
+
+ @list
+
 Users online: Bob, Alice
-> @Bob Can you share the notes?
-> /get report.pdf
+
+ @Bob Can you share the notes?
+
+/get report.pdf
+
 📁 File downloaded: /downloads/report.pdf
 
 
@@ -116,7 +124,7 @@ Output:
 
 👨‍💻 Author
 Shalu Baloda
-Java Intern at CODTECH IT SOLUTIONS & Vault of Codes
+Java Intern at CODTECH IT SOLUTIONS 
 This project is part of a practical internship assignment showcasing networking and multithreaded application development.
 
 📄 License
