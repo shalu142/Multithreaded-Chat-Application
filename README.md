@@ -128,9 +128,14 @@ Output:
 <img width="682" height="310" alt="Image" src="https://github.com/user-attachments/assets/26d7c0c9-e693-4fa1-bd61-1c7cb93318c6" />
 
 👨‍💻 Author
+
 Shalu Baloda
-Java Intern at CODTECH IT SOLUTIONS 
+
+Java Intern at CODTECH IT SOLUTIONS
+
 This project is part of a practical internship assignment showcasing networking and multithreaded application development.
 
+
 📄 License
+
 This project is open-source and free to use for educational purposes.
