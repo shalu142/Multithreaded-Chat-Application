@@ -1,4 +1,4 @@
-// Server.java
+// ======= Server.java =======
 import java.io.*;
 import java.net.*;
 import java.time.LocalDateTime;
@@ -72,35 +72,57 @@ public class Server {
 
     static class ClientHandler implements Runnable {
         private Socket socket;
-        private BufferedReader input;
-        private PrintWriter output;
+        private DataInputStream dis;
+        private DataOutputStream dos;
         String name;
 
         public ClientHandler(Socket socket) {
             this.socket = socket;
             try {
-                input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                output = new PrintWriter(socket.getOutputStream(), true);
+                dis = new DataInputStream(socket.getInputStream());
+                dos = new DataOutputStream(socket.getOutputStream());
             } catch (IOException e) {
                 System.out.println("Error setting up client IO: " + e.getMessage());
             }
         }
 
         public void sendMessage(String message) {
-            output.println(message);
+            try {
+                dos.writeUTF(message);
+            } catch (IOException e) {
+                System.out.println("Failed to send message to " + name);
+            }
         }
 
         @Override
         public void run() {
             try {
-                output.println("Enter your username:");
-                name = input.readLine();
+                dos.writeUTF("Enter your username:");
+                name = dis.readUTF();
+
+                if (name == null || name.trim().isEmpty()) {
+                    dos.writeUTF("Invalid username. Connection closing.");
+                    socket.close();
+                    return;
+                }
+
+                synchronized (clients) {
+                    for (ClientHandler client : clients) {
+                        if (client != this && client.name.equals(name)) {
+                            dos.writeUTF("Username already taken. Connection closing.");
+                            socket.close();
+                            return;
+                        }
+                    }
+                }
+
                 broadcast(name + " joined the chat.", this);
 
-                String message;
-                while ((message = input.readLine()) != null) {
+                while (true) {
+                    String message = dis.readUTF();
+
                     if (message.equalsIgnoreCase("@list")) {
-                        output.println("Users online: " + getUserList());
+                        dos.writeUTF("Users online: " + getUserList());
                     } else if (message.startsWith("@")) {
                         int spaceIndex = message.indexOf(' ');
                         if (spaceIndex != -1) {
@@ -108,41 +130,47 @@ public class Server {
                             String privateMsg = message.substring(spaceIndex + 1);
                             sendPrivate(target, name + ": " + privateMsg);
                         }
-                    } else if (message.startsWith("/file ")) {
-                        String[] parts = message.split(" ", 2);
-                        File file = new File("uploads", parts[1]);
-                        if (file.exists()) {
-                            output.println("/filetransfer " + file.getName() + " " + file.length());
-                            try (FileInputStream fis = new FileInputStream(file);
-                                 OutputStream os = socket.getOutputStream()) {
-                                byte[] buffer = new byte[4096];
-                                int bytesRead;
-                                while ((bytesRead = fis.read(buffer)) != -1) {
-                                    os.write(buffer, 0, bytesRead);
-                                }
-                                os.flush();
-                                System.out.println("File sent to " + name + ": " + file.getName());
-                            }
-                        } else {
-                            output.println("File not found on server.");
-                        }
                     } else if (message.startsWith("/get ")) {
                         String filename = message.substring(5).trim();
                         File file = new File("uploads", filename);
                         if (file.exists()) {
-                            output.println("/filetransfer " + file.getName() + " " + file.length());
-                            try (FileInputStream fis = new FileInputStream(file);
-                                 OutputStream os = socket.getOutputStream()) {
+                            dos.writeUTF("/filetransfer " + file.getName() + " " + file.length());
+                            try (FileInputStream fis = new FileInputStream(file)) {
                                 byte[] buffer = new byte[4096];
                                 int bytesRead;
                                 while ((bytesRead = fis.read(buffer)) != -1) {
-                                    os.write(buffer, 0, bytesRead);
+                                    dos.write(buffer, 0, bytesRead);
                                 }
-                                os.flush();
+                                dos.flush();
                                 System.out.println("Sent file to " + name + ": " + filename);
                             }
                         } else {
-                            output.println("File not found.");
+                            dos.writeUTF("File not found.");
+                        }
+                    } else if (message.startsWith("/upload ")) {
+                        String[] parts = message.split(" ", 3);
+                        if (parts.length < 3) {
+                            dos.writeUTF("Usage: /upload <filename> <filesize>");
+                            continue;
+                        }
+
+                        String filename = parts[1];
+                        long fileSize = Long.parseLong(parts[2]);
+                        File file = new File("uploads", filename);
+
+                        try (FileOutputStream fos = new FileOutputStream(file)) {
+                            byte[] buffer = new byte[4096];
+                            long remaining = fileSize;
+                            int bytesRead;
+                            while (remaining > 0 && (bytesRead = dis.read(buffer, 0, (int)Math.min(buffer.length, remaining))) != -1) {
+                                fos.write(buffer, 0, bytesRead);
+                                remaining -= bytesRead;
+                            }
+                            System.out.println("Received file from " + name + ": " + filename);
+                            dos.writeUTF("Upload successful: " + filename);
+                            broadcast(name + " uploaded a file: " + filename + " (" + fileSize + " bytes)", this);
+                        } catch (IOException e) {
+                            dos.writeUTF("Error receiving file.");
                         }
                     } else if (message.equalsIgnoreCase("bye")) {
                         break;
