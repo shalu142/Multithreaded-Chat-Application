@@ -122,6 +122,11 @@ This application is a solid foundation for building more complex systems. With s
 
 Output:
 
+<img width="1360" height="720" alt="Image" src="https://github.com/user-attachments/assets/d14efcb1-874d-479f-8af9-05e20e21619c" />
+<img width="729" height="184" alt="Image" src="https://github.com/user-attachments/assets/f13d1781-aa80-4193-9a4f-0fcf27c94342" />
+<img width="707" height="189" alt="Image" src="https://github.com/user-attachments/assets/ae2615f7-3861-43a9-ad7d-81ea5b75e487" />
+<img width="682" height="310" alt="Image" src="https://github.com/user-attachments/assets/26d7c0c9-e693-4fa1-bd61-1c7cb93318c6" />
+
 👨‍💻 Author
 Shalu Baloda
 Java Intern at CODTECH IT SOLUTIONS 
